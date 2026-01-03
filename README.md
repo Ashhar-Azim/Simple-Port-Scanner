@@ -31,7 +31,7 @@ Scan only systems you own or have permission to test.
 python port_scanner.py
 ```
 
-```_____________________
+____________________
 🔧 Next smart upgrades (in order)
 
 Add multithreading (huge performance boost)
@@ -39,7 +39,7 @@ Add multithreading (huge performance boost)
 Add service name detection
 
 Save results to a file
-____________________________
+
 Add CLI arguments (argparse)
 ___________________
-```
+
