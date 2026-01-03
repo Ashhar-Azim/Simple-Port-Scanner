@@ -29,8 +29,9 @@ Scan only systems you own or have permission to test.
 ## Usage
 ```bash
 python port_scanner.py
+```
 
-_____________________
+```_____________________
 🔧 Next smart upgrades (in order)
 
 Add multithreading (huge performance boost)
@@ -41,3 +42,4 @@ Save results to a file
 ____________________________
 Add CLI arguments (argparse)
 ___________________
+```
