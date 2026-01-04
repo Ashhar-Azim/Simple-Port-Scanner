@@ -1,0 +1,76 @@
+📘 Project_Documentation.docx (content outline)
+
+You can paste this into Word and format it properly.
+
+Title
+
+Simple Port Scanner Using Python
+
+1. Introduction
+
+Cybersecurity reconnaissance involves identifying open ports and services on a
+target system. This project implements a simple TCP port scanner to understand
+how attackers and defenders analyze network exposure.
+
+2. Objectives
+
+Learn basic socket programming
+
+Understand TCP port scanning
+
+Practice ethical cybersecurity principles
+
+Build a functional security tool in Python
+
+3. Tools & Technologies
+
+Python 3
+
+Socket programming
+
+Windows/Linux OS
+
+4. Methodology
+
+Resolve target hostname to IP
+
+Create TCP socket
+
+Attempt connection to each port
+
+Record open ports
+
+Display results to user
+
+5. Ethical Considerations
+
+This scanner must only be used on systems owned by the user or with explicit
+authorization. Unauthorized scanning is illegal and unethical.
+
+6. Results
+
+The scanner successfully identifies open TCP ports within a specified range
+on the target system.
+
+7. Limitations
+
+Slow for large port ranges
+
+No service detection
+
+TCP only
+
+8. Future Scope
+
+Multithreaded scanning
+
+Banner grabbing
+
+GUI interface
+
+Logging and reporting
+
+9. Conclusion
+
+This project provides hands-on experience with networking fundamentals and
+serves as a foundation for advanced cybersecurity tools.
