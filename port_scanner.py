@@ -1,108 +1,99 @@
-# Import socket module for network communication
 import socket
-
-# Import datetime to record scan start and end time
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 def scan_port(target_ip, port):
     """
-    Attempts to connect to a specific TCP port on the target IP.
-    If connection is successful, the port is open.
-
-    Args:
-        target_ip (str): IP address of the target
-        port (int): Port number to scan
-
-    Returns:
-        bool: True if port is open, False otherwise
+    Attempts to connect to a TCP port on the target IP.
+    Returns True if the port is open, False otherwise.
     """
     try:
-        # Create a TCP socket (IPv4 + TCP)
+        # Create a TCP socket (IPv4, TCP)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        # Set timeout to avoid hanging on closed/filtered ports
+        # Short timeout to avoid blocking threads
         sock.settimeout(0.5)
 
-        # connect_ex() returns 0 if connection is successful
+        # connect_ex returns 0 if connection succeeds
         result = sock.connect_ex((target_ip, port))
 
-        # Close socket after attempting connection
+        # Close the socket after attempt
         sock.close()
 
-        # If result is 0, port is open
         return result == 0
 
     except socket.error:
-        # If any socket error occurs, treat port as closed
         return False
 
 
 def main():
-    """
-    Main function that:
-    - Takes user input
-    - Resolves hostname to IP
-    - Scans a range of ports
-    - Displays results
-    """
+    print("=" * 60)
+    print("        Multithreaded Port Scanner (Python)")
+    print("=" * 60)
 
-    # Display program banner
-    print("=" * 50)
-    print("        Simple Port Scanner (Python)")
-    print("=" * 50)
-
-    # Get target hostname or IP from user
+    # Get target from user
     target = input("Enter target IP or hostname: ")
 
     try:
         # Resolve hostname to IP address
         target_ip = socket.gethostbyname(target)
     except socket.gaierror:
-        # If hostname resolution fails
-        print("Error: Invalid hostname or unreachable target.")
+        print("Error: Invalid hostname.")
         return
 
-    # Get port range from user
+    # Get port range
     try:
         start_port = int(input("Enter start port: "))
         end_port = int(input("Enter end port: "))
     except ValueError:
-        print("Error: Ports must be integers.")
+        print("Error: Ports must be numbers.")
         return
 
-    # Display scan information
-    print("\nScanning Target:", target_ip)
-    print("Scan started at:", datetime.now())
-    print("-" * 50)
+    # Limit number of threads (important for stability)
+    MAX_THREADS = 100
 
-    # List to store open ports
+    print("\nScanning target:", target_ip)
+    print("Scan started at:", datetime.now())
+    print("-" * 60)
+
     open_ports = []
 
-    # Loop through each port in the given range
-    for port in range(start_port, end_port + 1):
+    # ThreadPoolExecutor manages thread creation efficiently
+    with ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
 
-        # Check if current port is open
-        if scan_port(target_ip, port):
-            print(f"[+] Port {port} is OPEN")
-            open_ports.append(port)
+        # Submit scan_port tasks to thread pool
+        future_to_port = {
+            executor.submit(scan_port, target_ip, port): port
+            for port in range(start_port, end_port + 1)
+        }
 
-    # Scan completed
-    print("-" * 50)
+        # Process results as threads complete
+        for future in as_completed(future_to_port):
+            port = future_to_port[future]
+
+            try:
+                if future.result():
+                    print(f"[+] Port {port} is OPEN")
+                    open_ports.append(port)
+            except Exception:
+                # Catch unexpected thread errors
+                pass
+
+    print("-" * 60)
     print("Scan completed at:", datetime.now())
 
-    # Display scan results
+    # Display results
     if open_ports:
         print("\nOpen Ports Found:")
-        for port in open_ports:
+        for port in sorted(open_ports):
             print(f"- Port {port}")
     else:
         print("\nNo open ports found.")
 
-    print("\nNote: Scan only systems you own or have permission to test.")
+    print("\n⚠️  Ethical Reminder: Scan only systems you own or have permission to test.")
 
 
-# Entry point of the program
-# Ensures main() runs only when this file is executed directly
+# Program entry point
 if __name__ == "__main__":
     main()
