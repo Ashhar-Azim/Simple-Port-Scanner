@@ -1,163 +1,150 @@
 """
-Multithreaded Port Scanner
---------------------------
-Author  : Ashhar
-Purpose : Scan a target host for open TCP ports using multithreading
-Note    : For educational and authorized testing only
+Multithreaded Port Scanner with Rate Limiting & File Output
+-----------------------------------------------------------
+Author  : Ashhar 
+Purpose : Scan a target host responsibly using throttled multithreading
+Ethics  : Scan only systems you own or have permission to test
 """
 
 # =========================
-#        IMPORTS
+#          IMPORTS
 # =========================
 
-# Socket module is used for low-level network communication
 import socket
-
-# datetime is used to record scan start and end time
+import time
 from datetime import datetime
-
-# ThreadPoolExecutor allows concurrent execution of port scans
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 # =========================
-#     PORT SCAN FUNCTION
+#      PORT SCAN LOGIC
 # =========================
 
-def scan_port(target_ip, port):
+def scan_port(target_ip, port, timeout=0.5):
     """
-    Attempts to establish a TCP connection to a given port.
+    Attempts to connect to a TCP port on the target system.
 
     Parameters:
-        target_ip (str): IP address of the target system
-        port (int): Port number to scan
+        target_ip (str): Target IP address
+        port (int): Port number
+        timeout (float): Socket timeout in seconds
 
     Returns:
         bool: True if port is open, False otherwise
     """
-
     try:
-        # Create a socket using:
-        # AF_INET     -> IPv4
-        # SOCK_STREAM -> TCP protocol
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(timeout)
 
-        # Set a timeout so threads do not block indefinitely
-        sock.settimeout(0.5)
-
-        # Attempt connection to target port
-        # connect_ex() returns:
-        # 0 -> success (port open)
-        # non-zero -> failure (port closed/filtered)
+        # connect_ex returns 0 if connection succeeds
         result = sock.connect_ex((target_ip, port))
 
-        # Always close the socket to free system resources
         sock.close()
-
-        # Return True only if port is open
         return result == 0
 
     except socket.error:
-        # Any socket-related error is treated as a closed port
         return False
 
 
 # =========================
-#         MAIN LOGIC
+#        MAIN PROGRAM
 # =========================
 
 def main():
-    """
-    Main program flow:
-    - Accept user input
-    - Resolve hostname to IP
-    - Scan ports concurrently
-    - Display scan results
-    """
-
-    # Program banner
-    print("=" * 65)
-    print("        Multithreaded Port Scanner (Python)")
-    print("=" * 65)
+    print("=" * 75)
+    print("   Multithreaded Port Scanner (Rate Limited & Logged)")
+    print("=" * 75)
 
     # -------------------------
-    #   USER INPUT
+    #        USER INPUT
     # -------------------------
 
-    # Get target hostname or IP from user
     target = input("Enter target IP or hostname: ")
 
     try:
-        # Convert hostname to IP address
         target_ip = socket.gethostbyname(target)
     except socket.gaierror:
-        # Hostname resolution failed
-        print("Error: Invalid hostname or target unreachable.")
+        print("Error: Invalid hostname.")
         return
 
-    # Get port range from user
     try:
         start_port = int(input("Enter start port: "))
         end_port   = int(input("Enter end port  : "))
     except ValueError:
-        # Input validation for ports
-        print("Error: Port numbers must be integers.")
+        print("Error: Ports must be integers.")
         return
 
     # -------------------------
-    #   SCAN CONFIGURATION
+    #     SCAN CONFIGURATION
     # -------------------------
 
-    # Maximum number of concurrent threads
-    # Higher values increase speed but may overload the system
-    MAX_THREADS = 100
+    MAX_THREADS       = 50     # Maximum concurrent threads
+    PORTS_PER_BATCH   = 50     # Rate limit: ports scanned per batch
+    BATCH_DELAY       = 1.0    # Throttle delay (seconds)
+    SOCKET_TIMEOUT    = 0.5
 
-    # List to store open ports
     open_ports = []
 
-    # Display scan details
-    print("\nScanning Target :", target_ip)
+    # Output file name with timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    output_file = f"scan_results_{target_ip}_{timestamp}.txt"
+
+    print("\nTarget IP       :", target_ip)
     print("Port Range     :", f"{start_port} - {end_port}")
+    print("Threads Used   :", MAX_THREADS)
+    print("Rate Limit     :", f"{PORTS_PER_BATCH} ports / batch")
+    print("Throttle Delay :", f"{BATCH_DELAY} seconds")
     print("Scan Started   :", datetime.now())
-    print("-" * 65)
+    print("-" * 75)
 
     # -------------------------
-    #   MULTITHREADED SCAN
+    #     RATE-LIMITED SCAN
     # -------------------------
 
-    # ThreadPoolExecutor manages worker threads efficiently
-    with ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
+    with open(output_file, "w") as file:
+        file.write(f"Port Scan Results for {target_ip}\n")
+        file.write(f"Scan Time: {datetime.now()}\n")
+        file.write("-" * 60 + "\n")
 
-        # Submit all port scan tasks to the thread pool
-        future_to_port = {
-            executor.submit(scan_port, target_ip, port): port
-            for port in range(start_port, end_port + 1)
-        }
+        # Process ports in controlled batches
+        for batch_start in range(start_port, end_port + 1, PORTS_PER_BATCH):
 
-        # Process results as soon as threads complete
-        for future in as_completed(future_to_port):
+            batch_end = min(batch_start + PORTS_PER_BATCH - 1, end_port)
+            current_batch = range(batch_start, batch_end + 1)
 
-            # Get the port number associated with this thread
-            port = future_to_port[future]
+            print(f"\nScanning ports {batch_start} to {batch_end}...")
 
-            try:
-                # Retrieve result from thread
-                if future.result():
-                    print(f"[+] Port {port:<5} OPEN")
-                    open_ports.append(port)
+            with ThreadPoolExecutor(max_workers=MAX_THREADS) as executor:
 
-            except Exception:
-                # Catch and ignore unexpected thread-level errors
-                pass
+                futures = {
+                    executor.submit(scan_port, target_ip, port, SOCKET_TIMEOUT): port
+                    for port in current_batch
+                }
+
+                for future in as_completed(futures):
+                    port = futures[future]
+
+                    try:
+                        if future.result():
+                            print(f"[+] Port {port:<5} OPEN")
+                            open_ports.append(port)
+                            file.write(f"OPEN  - Port {port}\n")
+                    except Exception:
+                        pass
+
+            # Throttle scanning speed
+            time.sleep(BATCH_DELAY)
+
+        file.write("-" * 60 + "\n")
+        file.write(f"Open Ports Count: {len(open_ports)}\n")
 
     # -------------------------
-    #   SCAN COMPLETION
+    #        FINAL OUTPUT
     # -------------------------
 
-    print("-" * 65)
+    print("\n" + "-" * 75)
     print("Scan Completed :", datetime.now())
 
-    # Display final scan results
     if open_ports:
         print("\nOpen Ports Found:")
         for port in sorted(open_ports):
@@ -165,15 +152,13 @@ def main():
     else:
         print("\nNo open ports found.")
 
-    # Ethical disclaimer
-    print("\n⚠️  Ethical Reminder:")
-    print("   Scan only systems you own or have explicit permission to test.")
+    print(f"\nResults saved to file: {output_file}")
+    print("\n⚠️  Ethical Reminder: Authorized testing only.")
 
 
 # =========================
-#     PROGRAM ENTRY POINT
+#      ENTRY POINT
 # =========================
 
-# Ensures main() runs only when this file is executed directly
 if __name__ == "__main__":
     main()
