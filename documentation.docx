@@ -1,192 +1,111 @@
-Simple Port Scanner Using Python
-1. Introduction
+# 🔐 Simple Port Scanner Using Python
 
-Port scanning is a fundamental technique used in cybersecurity to identify open
-network ports on a target system. Open ports may indicate running services and
-potential security vulnerabilities. This project implements a simple TCP port
-scanner using Python to demonstrate basic concepts of networking, reconnaissance,
-and ethical security testing.
+## 📌 Introduction
+Port scanning is a fundamental technique in cybersecurity used to identify open
+network ports on a target system. Open ports may indicate active services and
+potential security vulnerabilities.
 
-2. Objectives
+This project implements a **simple TCP port scanner using Python** to demonstrate
+basic networking, reconnaissance, and ethical security testing concepts.
 
-The objectives of this project are:
+> ⚠️ **Disclaimer:**  
+> This tool is strictly for educational purposes. Scan only systems you own or
+> have explicit permission to test.
 
-To understand TCP/IP and socket programming
+---
 
-To learn how port scanning works at a basic level
+## 🎯 Objectives
+- Understand TCP/IP and socket programming
+- Learn how port scanning works
+- Build a functional cybersecurity tool in Python
+- Practice ethical hacking principles
+- Improve code readability and documentation
 
-To implement a functional cybersecurity tool in Python
+---
 
-To follow ethical guidelines in security testing
+## 📦 Project Scope
+- TCP port scanning only
+- Small to medium port ranges
+- Educational and lab-based usage
+- No exploit or attack automation
 
-To improve code readability using meaningful comments and structure
+---
 
-3. Scope of the Project
+## 🛠️ Tools & Technologies
 
-This project focuses on:
+| Component | Description |
+|---------|-------------|
+| Language | Python 3 |
+| Libraries | `socket`, `datetime` |
+| OS | Windows / Linux |
+| Environment | Local machine or virtual lab |
 
-Scanning TCP ports only
+---
 
-Small to medium port ranges
+## 🧱 System Architecture
+The project follows a **sequential scanning architecture**:
 
-Educational and laboratory use
+1. User inputs target hostname or IP
+2. Hostname is resolved to an IP address
+3. TCP socket is created for each port
+4. Connection attempt is made
+5. Open ports are recorded and displayed
 
-It does not include advanced features such as UDP scanning, exploit detection,
-or real-world attack automation.
+---
 
-4. Tools and Technologies Used
-Component	Description
-Programming Language	Python 3
-Libraries	socket, datetime
-Operating System	Windows / Linux
-Environment	Local machine or virtual lab
-5. System Architecture
+## ⚙️ Methodology
 
-The system follows a simple sequential architecture:
-
-User inputs target hostname/IP
-
-Hostname is resolved to IP address
-
-TCP socket is created for each port
-
-Connection attempt is made
-
-Open ports are recorded and displayed
-
-6. Methodology
-Step 1: Input Collection
-
+### Step 1: Input Collection
 The user provides:
-
-Target hostname or IP address
-
-Start and end port numbers
-
-Step 2: Hostname Resolution
-
-The program resolves the hostname using DNS to obtain the IP address.
-
-Step 3: Port Scanning
-
-For each port in the specified range:
-
-A TCP socket is created
-
-A connection attempt is made using connect_ex()
-
-A timeout is applied to avoid delays
-
-Step 4: Result Collection
-
-Ports returning successful connections are marked as open
-
-Open ports are stored in a list
-
-Step 5: Output Display
-
-Open ports are displayed to the user
-
-Scan start and end time are recorded
-
-7. Algorithm
-
-Start program
-
-Accept target input
-
-Resolve hostname to IP
-
-Accept port range
-
-For each port:
-
-Create TCP socket
-
-Attempt connection
-
-If successful, mark port as open
-
-Display results
-
-End program
-
-8. Ethical Considerations
-
-Port scanning can be interpreted as malicious activity if performed without
-authorization. Therefore:
-
-The tool must be used only on systems owned by the user
-
-Permission must be obtained before scanning external systems
-
-The project is strictly for educational purposes
-
-9. Results and Observations
-
-The scanner successfully:
-
-Identifies open TCP ports
-
-Handles invalid hostnames gracefully
-
-Avoids unnecessary delays using socket timeouts
-
-Sample output includes:
-
-Open ports found
-
-Scan duration
-
-Target IP address
-
-10. Limitations
-
-Sequential scanning is slow for large port ranges
-
-No service or banner detection
-
-TCP only (UDP not supported)
-
-No logging or report generation
-
-11. Future Enhancements
-
-Multithreaded port scanning
-
-Service and version detection
-
-Output results to file
-
-Command-line argument support
-
-Graphical user interface (GUI)
-
-12. Learning Outcomes
-
-Through this project, the following concepts were learned:
-
-Basics of TCP/IP networking
-
-Socket programming in Python
-
-Ethical hacking fundamentals
-
-Secure and readable code documentation
-
-Practical cybersecurity reconnaissance techniques
-
-13. Conclusion
-
-This project demonstrates how basic cybersecurity tools are built using Python.
-By implementing a simple port scanner, the project provides hands-on experience
-with networking concepts and establishes a strong foundation for advanced
-security tools and defensive analysis.
-
-14. References
-
-Python Official Documentation
-
-TCP/IP Networking Concepts
-
-OWASP Security Guidelines
+- Target hostname or IP address
+- Start and end port numbers
+
+### Step 2: Hostname Resolution
+The hostname is resolved using DNS to obtain the target IP address.
+
+### Step 3: Port Scanning
+For each port in the given range:
+- A TCP socket is created
+- `connect_ex()` attempts a connection
+- Timeout prevents long delays
+
+### Step 4: Result Collection
+- Successfully connected ports are marked as open
+- Open ports are stored in a list
+
+### Step 5: Output Display
+- Open ports are printed
+- Scan start and end time are displayed
+
+---
+
+## 🧮 Algorithm
+1. Start program  
+2. Accept target input  
+3. Resolve hostname to IP  
+4. Accept port range  
+5. For each port:  
+   - Create TCP socket  
+   - Attempt connection  
+   - If successful, mark port as open  
+6. Display results  
+7. End program  
+
+---
+
+## 🔐 Ethical Considerations
+Port scanning can be considered malicious if performed without authorization.
+
+- Scan only systems you own or have permission to test
+- Do not scan public or private networks without consent
+- Intended for educational use only
+
+---
+
+## 📊 Results & Observations
+- Successfully identifies open TCP ports
+- Handles invalid hostnames gracefully
+- Socket timeout improves performance
+- Clean and readable output
+
+Example output:
